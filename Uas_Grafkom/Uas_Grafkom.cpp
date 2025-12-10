@@ -10,9 +10,8 @@ float cameraRotY = 0.0f;
 
 float flyingAngle = 0.0f;
 float wingFlap = 0.0f;
-float animationSpeed = 3.0f;
+float animationSpeed = 0.2f;
 bool isAnimating = true;
-int lastTime = 0;
 
 // Definisi warna
 float beeYellow[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };
@@ -177,6 +176,7 @@ void drawWings() {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
 
     // Sayap Kiri
     glPushMatrix();
@@ -198,6 +198,7 @@ void drawWings() {
     glPopMatrix();
     glPopMatrix();
 
+    glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
 
     glPopMatrix();
@@ -206,7 +207,8 @@ void drawWings() {
 void drawBee() {
     glPushMatrix();
 
-    glTranslatef(0.2f * sinf(flyingAngle), 0.15f * cosf(flyingAngle * 0.7f), 0.0f);
+    float hoverY = 0.15f * cosf(flyingAngle * 0.7f);
+    glTranslatef(0.0f, hoverY, 0.0f);
 
     drawHead();
     drawBody();
@@ -215,39 +217,59 @@ void drawBee() {
     glPopMatrix();
 }
 
-void initLighting() {
-    GLfloat light_position[] = { 3.0f, 4.0f, 3.0f, 0.0f };
-    GLfloat light_ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat light_diffuse[] = { 0.7f, 0.7f, 0.7f, 1.0f };
-    GLfloat light_specular[] = { 0.05f, 0.05f, 0.05f, 1.0f };
-
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+void timer(int value) {
+    if (isAnimating) {
+        static float t_wing = 0.0f;
+        t_wing += 1.5f;
+        wingFlap = sinf(t_wing);
+        flyingAngle += animationSpeed;
+    }
+    glutPostRedisplay();
+    glutTimerFunc(16, timer, 0);
 }
 
-void init() {
-    glClearColor(0.95f, 0.95f, 0.98f, 1.0f);
+void keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'w':
+    case 'W':
+        cameraY -= 0.1f;
+        break;
+    case 's':
+    case 'S':
+        cameraY += 0.1f;
+        break;
+    case ' ':
+        isAnimating = !isAnimating;
+        break;
+    case 'r':
+    case 'R':
+        cameraX = 0;
+        cameraY = 0;
+        cameraZ = 3.5f;
+        cameraRotX = 0;
+        cameraRotY = 0;
+        break;
+    case 27:
+        exit(0);
+        break;
+    }
+    glutPostRedisplay();
+}
+
+void initLighting() {
+    GLfloat light_pos[] = { 3.0f, 4.0f, 5.0f, 1.0f };
+    GLfloat white_light[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat amb_light[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, amb_light);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
     glEnable(GL_DEPTH_TEST);
-    initLighting();
-
-    glMatrixMode(GL_PROJECTION);
-    gluPerspective(45.0f, 1.0f, 0.1f, 100.0f);
-    glMatrixMode(GL_MODELVIEW);
-
-    printf("KONTROL:\n");
-    printf("  W/A/S/D     → Pan Camera\n");
-    printf("  ↑/↓/←/→     → Rotate View\n");
-    printf("  R           → Reset View\n");
-    printf("  SPACE       → Pause animation\n");
-    printf("  ESC         → Exit\n\n");
+    glShadeModel(GL_SMOOTH);
 }
 
 void display() {
@@ -262,12 +284,10 @@ void display() {
     float eyeZ = cameraZ * cosf(radY) * cosf(radX);
 
     gluLookAt(eyeX, eyeY, eyeZ,
-        0.0f, 0.1f, 0.0f,
+        cameraX, cameraY, 0.0f,
         0.0f, 1.0f, 0.0f);
 
     drawBee();
-
-    glFlush();
     glutSwapBuffers();
 }
 
@@ -276,23 +296,30 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0f, (float)w / (float)h, 0.1f, 100.0f);
+    gluPerspective(45.0f, (float)w / h, 0.1f, 100.0f);
     glMatrixMode(GL_MODELVIEW);
 }
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(1000, 800);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Cute Bee 3D - Kawaii Bee! 🐝");
+    glutInitWindowSize(800, 600);
+    glutCreateWindow("UAS Grafika Komputer - Cute Bee 3D");
 
-    init();
+    initLighting();
+    glClearColor(0.95f, 0.95f, 0.98f, 1.0f);
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    glutTimerFunc(0, timer, 0);
+
+    printf("=== KONTROL PROGRAM ===\n");
+    printf("W/S : Geser Kamera Vertikal\n");
+    printf("Spasi : Pause/Play Animasi\n");
+    printf("R : Reset Kamera\n");
+    printf("ESC : Keluar\n");
 
     glutMainLoop();
-
     return 0;
 }
