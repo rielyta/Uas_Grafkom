@@ -1,8 +1,6 @@
 ﻿#include <glut.h>
 #include <math.h>
-#include <cmath>
 #include <stdio.h>
-
 
 float cameraX = 0.0f;
 float cameraY = 0.0f;
@@ -16,29 +14,26 @@ float animationSpeed = 3.0f;
 bool isAnimating = true;
 int lastTime = 0;
 
-//color
-float beeYellow[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };     // Bright yellow
-float beeBlack[4] = { 20.0f / 255.0f, 20.0f / 255.0f, 20.0f / 255.0f, 1.0f };      // Black stripes
-float whiteColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };                                  // Eyes white
-float darkBrown[4] = { 101.0f / 255.0f, 67.0f / 255.0f, 33.0f / 255.0f, 1.0f };    // Pupils
-float wingColor[4] = { 0.7f, 0.8f, 1.0f, 0.5f };                                   // Wing (light blue transparent)
-float skinColor[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };  // Head 
+// Definisi warna
+float beeYellow[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };
+float beeBlack[4] = { 20.0f / 255.0f, 20.0f / 255.0f, 20.0f / 255.0f, 1.0f };
+float whiteColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+float darkBrown[4] = { 101.0f / 255.0f, 67.0f / 255.0f, 33.0f / 255.0f, 1.0f };
+float wingColor[4] = { 0.7f, 0.8f, 1.0f, 0.5f };
+float skinColor[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };
 
-//sphere
 void drawSphere(float radius, int slices, float color[]) {
-    glColor3f(color[0], color[1], color[2]);
+    glColor3fv(color);
     glMaterialfv(GL_FRONT, GL_AMBIENT, color);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
-    GLfloat specular[] = { 0.02f, 0.02f, 0.02f, 1.0f };
+    GLfloat specular[] = { 0.1f, 0.1f, 0.1f, 1.0f };
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT, GL_SHININESS, 10.0f);
     glutSolidSphere(radius, slices, slices);
 }
 
-
-//cylinder
 void drawCylinder(float radius, float height, int slices, float color[]) {
-    glColor3f(color[0], color[1], color[2]);
+    glColor3fv(color);
     glMaterialfv(GL_FRONT, GL_AMBIENT, color);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
     GLfloat specular[] = { 0.02f, 0.02f, 0.02f, 1.0f };
@@ -47,269 +42,176 @@ void drawCylinder(float radius, float height, int slices, float color[]) {
 
     GLUquadric* quad = gluNewQuadric();
     gluCylinder(quad, radius, radius, height, slices, slices);
+    gluDeleteQuadric(quad);
 }
 
-
-//head
 void drawHead() {
     glPushMatrix();
-    {
-        // Head position
-        glTranslatef(0.0f, 0.25f, 0.0f);
+    glTranslatef(0.0f, 0.25f, 0.0f);
 
-        // HEAD MAIN SPHERE - pale yellow
-        drawSphere(0.30f, 25, skinColor);
+    drawSphere(0.30f, 25, skinColor);
 
-        // Left antenna
+    // Antena Kiri
+    glPushMatrix();
+    glTranslatef(-0.18f, 0.28f, 0.0f);
+    glPushMatrix();
+    glTranslatef(-0.05f, 0.0f, 0.0f);
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    drawCylinder(0.025f, 0.15f, 8, beeBlack);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(-0.12f, 0.08f, 0.0f);
+    drawSphere(0.06f, 12, beeYellow);
+    glPopMatrix();
+    glPopMatrix();
+
+    // Antena Kanan
+    glPushMatrix();
+    glTranslatef(0.18f, 0.28f, 0.0f);
+    glPushMatrix();
+    glTranslatef(0.05f, 0.0f, 0.0f);
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    drawCylinder(0.025f, 0.15f, 8, beeBlack);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.12f, 0.08f, 0.0f);
+    drawSphere(0.06f, 12, beeYellow);
+    glPopMatrix();
+    glPopMatrix();
+
+    // Mata Kiri
+    glPushMatrix();
+    glTranslatef(-0.12f, 0.08f, 0.28f);
+    drawSphere(0.08f, 12, whiteColor);
+    glPushMatrix();
+    glTranslatef(0.0f, -0.01f, 0.075f);
+    drawSphere(0.04f, 10, darkBrown);
+    glPopMatrix();
+    glPopMatrix();
+
+    // Mata Kanan
+    glPushMatrix();
+    glTranslatef(0.12f, 0.08f, 0.28f);
+    drawSphere(0.08f, 12, whiteColor);
+    glPushMatrix();
+    glTranslatef(0.0f, -0.01f, 0.075f);
+    drawSphere(0.04f, 10, darkBrown);
+    glPopMatrix();
+    glPopMatrix();
+
+    // Senyum
+    for (int i = 0; i <= 6; i++) {
+        float angle = 0.4f + (3.14159f - 0.8f) * (i / 6.0f);
+        float x = 0.06f * cosf(angle);
+        float y = -0.10f - 0.04f * sinf(angle);
+        float z = 0.28f;
         glPushMatrix();
-        {
-            glTranslatef(-0.18f, 0.28f, 0.0f);
-
-            // Antenna line
-            glPushMatrix();
-            {
-                glTranslatef(-0.05f, 0.0f, 0.0f);
-                glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-                drawCylinder(0.025f, 0.15f, 8, beeBlack);
-            }
-            glPopMatrix();
-
-            // Antenna ball
-            glPushMatrix();
-            {
-                glTranslatef(-0.12f, 0.08f, 0.0f);
-                drawSphere(0.06f, 12, beeYellow);
-            }
-            glPopMatrix();
-        }
+        glTranslatef(x, y, z);
+        drawSphere(0.012f, 6, beeBlack);
         glPopMatrix();
-
-        // Right antenna
-        glPushMatrix();
-        {
-            glTranslatef(0.18f, 0.28f, 0.0f);
-
-            // Antenna line
-            glPushMatrix();
-            {
-                glTranslatef(0.05f, 0.0f, 0.0f);
-                glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-                drawCylinder(0.025f, 0.15f, 8, beeBlack);
-            }
-            glPopMatrix();
-
-            // Antenna ball
-            glPushMatrix();
-            {
-                glTranslatef(0.12f, 0.08f, 0.0f);
-                drawSphere(0.06f, 12, beeYellow);
-            }
-            glPopMatrix();
-        }
-        glPopMatrix();
-
-        // Left eye white
-        glPushMatrix();
-        {
-            glTranslatef(-0.12f, 0.08f, 0.28f);
-            drawSphere(0.08f, 12, whiteColor);
-
-            // Left pupil
-            glPushMatrix();
-            {
-                glTranslatef(0.0f, -0.01f, 0.075f);
-                drawSphere(0.04f, 10, darkBrown);
-            }
-            glPopMatrix();
-        }
-        glPopMatrix();
-
-        // Right eye white
-        glPushMatrix();
-        {
-            glTranslatef(0.12f, 0.08f, 0.28f);
-            drawSphere(0.08f, 12, whiteColor);
-
-            // Right pupil
-            glPushMatrix();
-            {
-                glTranslatef(0.0f, -0.01f, 0.075f);
-                drawSphere(0.04f, 10, darkBrown);
-            }
-            glPopMatrix();
-        }
-        glPopMatrix();
-
-        //smile
-        for (int i = 0; i <= 6; i++) {
-            float angle = 0.4f + (3.14159f - 0.8f) * (i / 6.0f);
-            float x = 0.06f * cosf(angle);
-            float y = -0.10f - 0.04f * sinf(angle); 
-            float z = 0.28f;
-            glPushMatrix();
-            {
-                glTranslatef(x, y, z);
-                drawSphere(0.012f, 6, beeBlack);
-            }
-            glPopMatrix();
-        }
     }
+
     glPopMatrix();
 }
 
-//body
 void drawBody() {
     glPushMatrix();
-    {
-        // Body position
-        glTranslatef(0.0f, 0.0f, 0.0f);
+    glTranslatef(0.0f, 0.0f, 0.0f);
 
-        // yellow part
-        glPushMatrix();
-        {
-            glTranslatef(0.0f, 0.05f, 0.0f);
-            drawSphere(0.20f, 22, beeYellow);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.05f, 0.0f);
+    drawSphere(0.20f, 22, beeYellow);
+    glPopMatrix();
 
-        //black part
-        glPushMatrix();
-        {
-            glTranslatef(0.0f, -0.08f, 0.0f);
-            drawSphere(0.20f, 22, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, -0.08f, 0.0f);
+    drawSphere(0.20f, 22, beeBlack);
+    glPopMatrix();
 
-        //yellow part
-        glPushMatrix();
-        {
-            glTranslatef(0.0f, -0.21f, 0.0f);
-            drawSphere(0.20f, 22, beeYellow);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, -0.21f, 0.0f);
+    drawSphere(0.20f, 22, beeYellow);
+    glPopMatrix();
 
-        //black part
-        glPushMatrix();
-        {
-            glTranslatef(0.0f, -0.34f, 0.0f);
-            drawSphere(0.18f, 20, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, -0.34f, 0.0f);
+    drawSphere(0.18f, 20, beeBlack);
+    glPopMatrix();
 
+    // Kaki
+    glPushMatrix();
+    glTranslatef(-0.22f, -0.05f, 0.0f);
+    drawSphere(0.05f, 8, beeBlack);
+    glPopMatrix();
 
-        // Front left leg
-        glPushMatrix();
-        {
-            glTranslatef(-0.22f, -0.05f, 0.0f);
-            drawSphere(0.05f, 8, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.22f, -0.05f, 0.0f);
+    drawSphere(0.05f, 8, beeBlack);
+    glPopMatrix();
 
-        // Front right leg
-        glPushMatrix();
-        {
-            glTranslatef(0.22f, -0.05f, 0.0f);
-            drawSphere(0.05f, 8, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(-0.24f, -0.15f, 0.0f);
+    drawSphere(0.05f, 8, beeBlack);
+    glPopMatrix();
 
-        // Middle left leg
-        glPushMatrix();
-        {
-            glTranslatef(-0.24f, -0.15f, 0.0f);
-            drawSphere(0.05f, 8, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.24f, -0.15f, 0.0f);
+    drawSphere(0.05f, 8, beeBlack);
+    glPopMatrix();
 
-        // Middle right leg
-        glPushMatrix();
-        {
-            glTranslatef(0.24f, -0.15f, 0.0f);
-            drawSphere(0.05f, 8, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(-0.22f, -0.28f, 0.0f);
+    drawSphere(0.05f, 8, beeBlack);
+    glPopMatrix();
 
-        // Back left leg
-        glPushMatrix();
-        {
-            glTranslatef(-0.22f, -0.28f, 0.0f);
-            drawSphere(0.05f, 8, beeBlack);
-        }
-        glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.22f, -0.28f, 0.0f);
+    drawSphere(0.05f, 8, beeBlack);
+    glPopMatrix();
 
-        // Back right leg
-        glPushMatrix();
-        {
-            glTranslatef(0.22f, -0.28f, 0.0f);
-            drawSphere(0.05f, 8, beeBlack);
-        }
-        glPopMatrix();
-    }
     glPopMatrix();
 }
 
-
-//wings
 void drawWings() {
     glPushMatrix();
-    {
-        // Enable transparency for wings
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // Left wing
-        glPushMatrix();
-        {
-            glTranslatef(-0.28f, 0.05f, 0.0f);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            // Rotate wings for flapping animation
-            glRotatef(wingFlap * 30.0f, 0.0f, 0.0f, 1.0f);
+    // Sayap Kiri
+    glPushMatrix();
+    glTranslatef(-0.28f, 0.05f, 0.0f);
+    glRotatef(wingFlap * 30.0f, 0.0f, 0.0f, 1.0f);
+    glPushMatrix();
+    glScalef(2.45f, 1.40f, 0.08f);
+    drawSphere(0.15f, 14, wingColor);
+    glPopMatrix();
+    glPopMatrix();
 
-            // Wing shape 
-            glPushMatrix();
-            {
-                glScalef(2.45f, 1.40f, 0.08f);
-                drawSphere(0.15f, 14, wingColor);
-            }
-            glPopMatrix();
-        }
-        glPopMatrix();
+    // Sayap Kanan
+    glPushMatrix();
+    glTranslatef(0.28f, 0.05f, 0.0f);
+    glRotatef(-wingFlap * 30.0f, 0.0f, 0.0f, 1.0f);
+    glPushMatrix();
+    glScalef(2.45f, 1.40f, 0.08f);
+    drawSphere(0.15f, 14, wingColor);
+    glPopMatrix();
+    glPopMatrix();
 
-        // Right wing
-        glPushMatrix();
-        {
-            glTranslatef(0.28f, 0.05f, 0.0f);
+    glDisable(GL_BLEND);
 
-            // Mirror flap animation
-            glRotatef(-wingFlap * 30.0f, 0.0f, 0.0f, 1.0f);
-
-            // Wing shape 
-            glPushMatrix();
-            {
-                glScalef(2.45f, 1.40f, 0.08f);
-                drawSphere(0.15f, 14, wingColor);
-            }
-            glPopMatrix();
-        }
-        glPopMatrix();
-
-        glDisable(GL_BLEND);
-    }
     glPopMatrix();
 }
 
-
-//bee
 void drawBee() {
     glPushMatrix();
-    {
-        // Flying motion
-        glTranslatef(0.2f * sinf(flyingAngle), 0.15f * cosf(flyingAngle * 0.7f), 0.0f);
 
-        drawHead();
-        drawBody();
-        drawWings();
-    }
+    glTranslatef(0.2f * sinf(flyingAngle), 0.15f * cosf(flyingAngle * 0.7f), 0.0f);
+
+    drawHead();
+    drawBody();
+    drawWings();
+
     glPopMatrix();
 }
 
@@ -332,7 +234,7 @@ void initLighting() {
 }
 
 void init() {
-    glClearColor(0.95f, 0.95f, 0.98f, 1.0f);  // Light background
+    glClearColor(0.95f, 0.95f, 0.98f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     initLighting();
 
