@@ -2,18 +2,21 @@
 #include <math.h>
 #include <stdio.h>
 
+// VARIABEL GLOBAL
+// Kamera
 float cameraX = 0.0f;
 float cameraY = 0.0f;
 float cameraZ = 3.5f;
 float cameraRotX = 0.0f;
 float cameraRotY = 0.0f;
 
+// Animasi
 float flyingAngle = 0.0f;
 float wingFlap = 0.0f;
-float animationSpeed = 0.2f;
+float animationSpeed = 0.1f;
 bool isAnimating = true;
 
-// Definisi warna
+// Definisi Warna
 float beeYellow[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };
 float beeBlack[4] = { 20.0f / 255.0f, 20.0f / 255.0f, 20.0f / 255.0f, 1.0f };
 float whiteColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -21,6 +24,7 @@ float darkBrown[4] = { 101.0f / 255.0f, 67.0f / 255.0f, 33.0f / 255.0f, 1.0f };
 float wingColor[4] = { 0.7f, 0.8f, 1.0f, 0.5f };
 float skinColor[4] = { 255.0f / 255.0f, 223.0f / 255.0f, 0.0f / 255.0f, 1.0f };
 
+// FUNGSI HELPER
 void drawSphere(float radius, int slices, float color[]) {
     glColor3fv(color);
     glMaterialfv(GL_FRONT, GL_AMBIENT, color);
@@ -44,6 +48,7 @@ void drawCylinder(float radius, float height, int slices, float color[]) {
     gluDeleteQuadric(quad);
 }
 
+// FUNGSI GAMBAR BAGIAN LEBAH
 void drawHead() {
     glPushMatrix();
     glTranslatef(0.0f, 0.25f, 0.0f);
@@ -217,6 +222,7 @@ void drawBee() {
     glPopMatrix();
 }
 
+// FUNGSI CALLBACK
 void timer(int value) {
     if (isAnimating) {
         static float t_wing = 0.0f;
@@ -269,6 +275,12 @@ void specialKeys(int key, int x, int y) {
         break;
     case GLUT_KEY_DOWN:
         cameraRotX += 5.0f;
+        break;
+    case GLUT_KEY_PAGE_UP:
+        cameraZ -= 0.2f;
+        break;
+    case GLUT_KEY_PAGE_DOWN:
+        cameraZ += 0.2f;
         break;
     }
 
@@ -337,8 +349,9 @@ int main(int argc, char** argv) {
     glutSpecialFunc(specialKeys);
     glutTimerFunc(0, timer, 0);
 
-    printf("KONTROL PROGRAM\n");
+    printf("=== KONTROL PROGRAM ===\n");
     printf("Panah (Kiri/Kanan/Atas/Bawah) : Putar Kamera\n");
+    printf("Page Up/Down : Zoom In/Out\n");
     printf("W/S : Geser Kamera Vertikal\n");
     printf("Spasi : Pause/Play Animasi\n");
     printf("R : Reset Kamera\n");
