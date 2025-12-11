@@ -256,6 +256,28 @@ void keyboard(unsigned char key, int x, int y) {
     glutPostRedisplay();
 }
 
+void specialKeys(int key, int x, int y) {
+    switch (key) {
+    case GLUT_KEY_LEFT:
+        cameraRotY -= 5.0f;
+        break;
+    case GLUT_KEY_RIGHT:
+        cameraRotY += 5.0f;
+        break;
+    case GLUT_KEY_UP:
+        cameraRotX -= 5.0f;
+        break;
+    case GLUT_KEY_DOWN:
+        cameraRotX += 5.0f;
+        break;
+    }
+
+    if (cameraRotX > 89.0f) cameraRotX = 89.0f;
+    if (cameraRotX < -89.0f) cameraRotX = -89.0f;
+
+    glutPostRedisplay();
+}
+
 void initLighting() {
     GLfloat light_pos[] = { 3.0f, 4.0f, 5.0f, 1.0f };
     GLfloat white_light[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -312,9 +334,11 @@ int main(int argc, char** argv) {
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
+    glutSpecialFunc(specialKeys);
     glutTimerFunc(0, timer, 0);
 
-    printf("=== KONTROL PROGRAM ===\n");
+    printf("KONTROL PROGRAM\n");
+    printf("Panah (Kiri/Kanan/Atas/Bawah) : Putar Kamera\n");
     printf("W/S : Geser Kamera Vertikal\n");
     printf("Spasi : Pause/Play Animasi\n");
     printf("R : Reset Kamera\n");
